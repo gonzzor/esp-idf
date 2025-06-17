@@ -49,6 +49,29 @@ extern "C" {
 #include <stddef.h>
 #include <stdint.h>
 
+extern const char *linenoiseEditMore;
+
+/* The linenoiseState structure represents the state during line editing.
+ * We pass this state to functions implementing specific editing
+ * functionalities. */
+struct linenoiseState {
+  int in_completion;  /* The user pressed TAB and we are now in completion
+                       * mode, so input is handled by completeLine(). */
+  size_t completion_idx; /* Index of next completion to propose. */
+  char *buf;          /* Edited line buffer. */
+  size_t buflen;      /* Edited line buffer size. */
+  const char *prompt; /* Prompt to display. */
+  size_t plen;        /* Prompt length. */
+  size_t pos;         /* Current cursor position. */
+  size_t oldpos;      /* Previous refresh cursor position. */
+  size_t len;         /* Current edited line length. */
+  size_t cols;        /* Number of columns in terminal. */
+  size_t oldrows;     /* Rows used by last refrehsed line (multiline mode) */
+  int history_index;  /* The history index we are currently editing. */
+  unsigned int t1;    /* Timestamp of last read character for paste support */
+  int dumbmode;       /* Is the current state in dumbmode */
+};
+
 typedef struct linenoiseCompletions {
   size_t len;
   char **cvec;
@@ -81,6 +104,13 @@ int linenoiseSetMaxLineLen(size_t len);
 typedef ssize_t (*linenoise_read_bytes_fn)(int, void*, size_t);
 void linenoiseSetReadFunction(linenoise_read_bytes_fn read_fn);
 void linenoiseSetReadCharacteristics(void);
+
+/* Non blocking API. */
+int linenoiseStart(struct linenoiseState *l, char *buf, size_t buflen, const char *prompt);
+char *linenoiseFeed(struct linenoiseState *l);
+void linenoiseStop(struct linenoiseState *l);
+void linenoiseHide(struct linenoiseState *l);
+void linenoiseShow(struct linenoiseState *l);
 
 #ifdef __cplusplus
 }
