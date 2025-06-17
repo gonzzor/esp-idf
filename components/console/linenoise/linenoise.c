@@ -120,7 +120,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/fcntl.h>
-#include <sys/time.h>
+#include <time.h>
 #include <sys/param.h>
 #include <assert.h>
 #include "linenoise.h"
@@ -910,9 +910,9 @@ static void linenoiseEditDeletePrevWord(struct linenoiseState *l) {
 }
 
 static uint32_t getMillis(void) {
-    struct timeval tv = { 0 };
-    gettimeofday(&tv, NULL);
-    return tv.tv_sec * 1000 + tv.tv_usec / 1000;
+    struct timespec tp = { 0 };
+    clock_gettime(CLOCK_MONOTONIC, &tp);
+    return tp.tv_sec * 1000 + tp.tv_nsec / 1000 / 1000;
 }
 
 static inline size_t prompt_len_ignore_escape_seq(const char *prompt) {
