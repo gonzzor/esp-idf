@@ -674,7 +674,20 @@ static void refreshMultiLine(struct linenoiseState *l, int flags) {
     if (flags & REFRESH_WRITE) {
         /* Write the prompt and the current buffer content */
         abAppend(&ab,l->prompt,strlen(l->prompt));
-        abAppend(&ab,l->buf,l->len);
+
+        /* Write the current buffer, wrap it on cols as needed */
+        int wrt = 0;
+        int cols = l->cols - l->plen;
+        if (cols < 0) cols = 0;
+        if (cols > l->len) cols = l->len;
+        do {
+            abAppend(&ab, l->buf + wrt, cols);
+            wrt += cols;
+            cols = l->cols;
+            if (cols > l->len - wrt) {
+                cols = l->len - wrt;
+            }
+        } while (wrt < l->len);
 
         /* Show hits if any. */
         refreshShowHints(&ab,l,plen);
